@@ -1,0 +1,181 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>GlucoHéroes: la misión del plato saludable</title>
+<style>
+:root{--bg:#f4f8f5;--card:#fff;--tx:#1d2b24;--mu:#5d6f66;--pr:#1f8a5b;--pr2:#d9f1e5;--bad:#d64545;--gold:#e0a100;--bd:#d5e2da;box-sizing:border-box;padding-top:env(safe-area-inset-top,0px);padding-bottom:env(safe-area-inset-bottom,0px)}
+@media (prefers-color-scheme:dark){:root:not([data-theme="light"]){--bg:#13201a;--card:#1c2d25;--tx:#e8f3ec;--mu:#9bb3a6;--pr:#3ecf8e;--pr2:#1f4535;--bad:#ff6b6b;--gold:#ffcc3d;--bd:#2f4a3d;color-scheme:dark}}
+:root[data-theme="dark"]{--bg:#13201a;--card:#1c2d25;--tx:#e8f3ec;--mu:#9bb3a6;--pr:#3ecf8e;--pr2:#1f4535;--bad:#ff6b6b;--gold:#ffcc3d;--bd:#2f4a3d;color-scheme:dark}
+html{scroll-padding-top:env(safe-area-inset-top,0px)}
+*{box-sizing:border-box}
+body{margin:0;background:var(--bg);color:var(--tx);font-family:system-ui,-apple-system,"Segoe UI",Roboto,sans-serif;line-height:1.4}
+main{max-width:640px;margin:0 auto;padding:16px}
+h1{font-size:1.6rem;margin:.2em 0}h2{margin:.2em 0}
+.card{background:var(--card);border:1px solid var(--bd);border-radius:16px;padding:16px;margin-bottom:12px}
+.mu{color:var(--mu);font-size:.9rem}
+button{font:inherit;cursor:pointer;border:0;border-radius:12px;padding:12px 18px;background:var(--pr);color:#fff;font-weight:700}
+input{font:inherit;padding:12px;border-radius:12px;border:1px solid var(--bd);background:var(--bg);color:var(--tx);width:100%;margin:8px 0}
+.hud{display:grid;grid-template-columns:repeat(4,1fr);gap:8px;text-align:center}
+.hud div{background:var(--card);border:1px solid var(--bd);border-radius:12px;padding:8px 4px;font-weight:700}
+.hud small{display:block;color:var(--mu);font-weight:400;font-size:.7rem}
+.bar{height:10px;background:var(--pr2);border-radius:9px;overflow:hidden;margin:10px 0}
+.bar i{display:block;height:100%;background:var(--pr);width:100%;transition:width .25s linear}
+.bar.low i{background:var(--bad)}
+.grid{display:grid;grid-template-columns:repeat(3,1fr);gap:8px}
+.food{background:var(--card);color:var(--tx);border:2px solid var(--bd);padding:10px 4px;font-weight:600;font-size:.85rem}
+.food span{display:block;font-size:2rem}
+.food.ok{border-color:var(--pr);background:var(--pr2)}
+.food.no{border-color:var(--bad);opacity:.55}
+.food:disabled{cursor:default}
+#msg{min-height:3em;margin:10px 0;padding:10px;border-radius:12px;background:var(--pr2)}
+#msg.bad{background:color-mix(in srgb,var(--bad) 20%,var(--card))}
+.ov{position:fixed;inset:0;background:rgba(0,0,0,.6);display:none;align-items:center;justify-content:center;padding:16px;z-index:9}
+.ov.on{display:flex}.ov .card{max-width:420px;text-align:center;margin:0}
+.big{font-size:3.5rem}
+ol{padding-left:1.4em;margin:.4em 0}
+.badges{font-size:1.8rem;letter-spacing:4px}
+.hide{display:none}
+</style>
+</head>
+<body>
+<main>
+<section id="s0">
+  <div class="card">
+    <h1>🦸 GlucoHéroes</h1>
+    <p>Eres un héroe que debe armar los platos perfectos para personas con diabetes. Completa <b>5 misiones</b> contra reloj y gana insignias.</p>
+    <ul class="mu">
+      <li>❤️ Tienes 3 vidas.</li>
+      <li>🍔 Si eliges un alimento que no conviene, pierdes una vida.</li>
+      <li>⏱️ Si se acaba el tiempo de la misión, también pierdes una vida.</li>
+      <li>🥦 Un alimento saludable te da un poder: 🛡️ escudo, ⏱️ tiempo extra o ⭐ puntos extra.</li>
+      <li>🎯 Reto: termina con 10 s o más de sobra y sin perder vidas para ganar +30 puntos.</li>
+    </ul>
+    <input id="nm" maxlength="14" placeholder="Escribe tu nombre de héroe">
+    <button id="go" style="width:100%">¡Comenzar!</button>
+  </div>
+  <div class="card"><h2>🏆 Tabla de líderes</h2><ol id="lb0"></ol></div>
+</section>
+
+<section id="s1" class="hide">
+  <div class="hud">
+    <div id="hV">❤️❤️❤️<small>Vidas</small></div>
+    <div id="hP">0<small>Puntos</small></div>
+    <div id="hS">🛡️ 0<small>Escudos</small></div>
+    <div id="hT">30<small>Segundos</small></div>
+  </div>
+  <div class="card" style="margin-top:10px">
+    <h2 id="mT"></h2>
+    <div class="mu" id="mG"></div>
+    <div class="bar" id="bar"><i id="bi"></i></div>
+    <div class="grid" id="grid"></div>
+    <div id="msg">Elige los alimentos que SÍ convienen.</div>
+    <div class="mu">Insignias: <span class="badges" id="bd"></span></div>
+  </div>
+</section>
+
+<section id="s2" class="hide">
+  <div class="card" style="text-align:center">
+    <div class="big" id="eE"></div>
+    <h1 id="eT"></h1>
+    <p id="eP"></p>
+    <div class="badges" id="eB"></div>
+    <button id="again" style="margin-top:12px">Jugar de nuevo</button>
+  </div>
+  <div class="card"><h2>🏆 Tabla de líderes</h2><ol id="lb1"></ol></div>
+</section>
+</main>
+
+<div class="ov" id="ov"><div class="card"><div class="big" id="oE"></div><h2 id="oT"></h2><p id="oP"></p><button id="oB">Continuar</button></div></div>
+
+<script>
+var F={
+av:["🥣","Avena","f","La fibra de la avena frena la subida de glucosa."],
+hu:["🥚","Huevo","p","Proteína que da saciedad sin elevar mucho la glucosa."],
+no:["🌵","Nopales","v","Verdura con fibra: ayuda a controlar la glucosa."],
+pi:["🐟","Pescado","p","Proteína magra y grasas buenas para el corazón."],
+fr:["🫘","Frijoles","f","Mucha fibra: absorción lenta de los carbohidratos."],
+br:["🥦","Brócoli","v","Verdura muy baja en carbohidratos."],
+es:["🥗","Ensalada","v","Llena el plato con pocas calorías y mucha fibra."],
+po:["🍗","Pollo asado","p","Proteína magra; mejor asado que frito."],
+pa:["🍞","Pan integral","f","Mejor opción que el pan blanco, en porción moderada."],
+ma:["🍎","Manzana","f","Fruta entera con cáscara: aporta fibra."],
+nu:["🥜","Nueces","p","Grasas saludables en porción pequeña."],
+ag:["🥑","Aguacate","p","Grasa buena que ayuda a la saciedad."],
+re:["🥤","Refresco","x","Azúcar líquida: sube la glucosa muy rápido."],
+ju:["🧃","Jugo de caja","x","Casi todo es azúcar y sin fibra."],
+pd:["🥐","Pan dulce","x","Harina refinada y azúcar: pico de glucosa."],
+do:["🍩","Donas","x","Azúcar, harina refinada y grasa."],
+ga:["🍪","Galletas","x","Azúcares añadidos y harinas refinadas."],
+he:["🍨","Helado","x","Mucha azúcar; solo ocasional y con guía médica."],
+pf:["🍟","Papas fritas","x","Grasas poco saludables y almidón."],
+pz:["🍰","Pastel","x","Exceso de azúcar y harina refinada."],
+mi:["🍯","Miel","x","Sigue siendo azúcar y eleva la glucosa."],
+ce:["🥣","Cereal azucarado","x","Parece sano, pero lleva mucha azúcar."]
+};
+var M=[
+{t:"Desayuno de campeón",b:"🌅",bn:"Insignia Amanecer",g:3,s:30,f:["av","hu","no","pd","ju","ce","ma","do","re"]},
+{t:"Colación inteligente",b:"🍎",bn:"Insignia Manzana",g:3,s:25,f:["nu","ma","es","ga","pf","he","pa","re","ag"]},
+{t:"Comida poderosa",b:"🍽️",bn:"Insignia Plato Fuerte",g:4,s:30,f:["pi","fr","es","po","re","pz","pf","mi","ju"]},
+{t:"Cena ligera",b:"🌙",bn:"Insignia Luna",g:4,s:28,f:["br","po","no","ag","he","do","ga","pd","ce"]},
+{t:"Reto final: ¡modo experto!",b:"👑",bn:"Corona GlucoHéroe",g:5,s:25,f:["av","pi","br","fr","es","nu","re","pz","pf","mi","do","ju"]}
+];
+var $=function(i){return document.getElementById(i)};
+var G,tm,player="";
+var SEED=[{n:"Ana",p:210},{n:"Luis",p:160},{n:"Sofi",p:120}];
+function lbGet(){var a=[];try{a=JSON.parse(localStorage.getItem("gh_lb")||"[]")}catch(e){}return a}
+function lbSave(n,p){var a=lbGet();a.push({n:n,p:p});try{localStorage.setItem("gh_lb",JSON.stringify(a.slice(-30)))}catch(e){}}
+function lbShow(){var a=lbGet().concat(SEED).sort(function(x,y){return y.p-x.p}).slice(0,5);
+  var h=a.map(function(r,i){return "<li>"+["🥇","🥈","🥉","",""][i]+" <b>"+esc(r.n)+"</b> · "+r.p+" pts</li>"}).join("");
+  $("lb0").innerHTML=h;$("lb1").innerHTML=h}
+function esc(s){return s.replace(/[&<>"]/g,function(c){return {"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;"}[c]})}
+function sh(a){a=a.slice();for(var i=a.length-1;i>0;i--){var j=Math.floor(Math.random()*(i+1));var t=a[i];a[i]=a[j];a[j]=t}return a}
+function show(n){["s0","s1","s2"].forEach(function(x,i){$(x).classList.toggle("hide",i!==n)})}
+function hud(){var v="";for(var i=0;i<3;i++)v+=i<G.v?"❤️":"🖤";$("hV").innerHTML=v+"<small>Vidas</small>";
+  $("hP").innerHTML=G.p+"<small>Puntos</small>";$("hS").innerHTML="🛡️ "+G.sh+"<small>Escudos</small>";
+  $("hT").innerHTML=Math.ceil(G.left)+"<small>Segundos</small>";
+  $("bi").style.width=Math.max(0,G.left/G.max*100)+"%";$("bar").classList.toggle("low",G.left<8);
+  $("bd").textContent=G.bg.join(" ")||"—"}
+function say(t,bad){$("msg").textContent=t;$("msg").className=bad?"bad":""}
+function modal(e,t,p,b,fn){$("oE").textContent=e;$("oT").textContent=t;$("oP").textContent=p;$("oB").textContent=b;$("ov").classList.add("on");$("oB").onclick=function(){$("ov").classList.remove("on");fn()}}
+function start(){G={v:3,p:0,sh:0,m:0,bg:[]};show(1);mission()}
+function mission(){var m=M[G.m];G.c=0;G.clean=true;G.max=G.left=m.s;
+  $("mT").textContent="Misión "+(G.m+1)+"/5: "+m.t;
+  $("mG").textContent="🎯 Meta: elige "+m.g+" alimentos saludables. Reto: termina con 10 s o más y sin perder vidas.";
+  say("Elige los alimentos que SÍ convienen a una persona con diabetes.");
+  var g=$("grid");g.innerHTML="";
+  sh(m.f).forEach(function(k){var f=F[k],b=document.createElement("button");b.className="food";
+    b.innerHTML="<span>"+f[0]+"</span>"+f[1];b.onclick=function(){pick(k,b)};g.appendChild(b)});
+  hud();clearInterval(tm);tm=setInterval(tick,250)}
+function tick(){G.left-=.25;hud();if(G.left<=0){clearInterval(tm);lose("⏱️ ¡Se acabó el tiempo!","Pierdes una vida. Intenta la misión otra vez.")}}
+function pick(k,b){var f=F[k];b.disabled=true;
+  if(f[2]==="x"){b.classList.add("no");
+    if(G.sh>0){G.sh--;say("🛡️ El escudo te protegió de "+f[1]+". "+f[3])}
+    else{G.clean=false;clearInterval(tm);hud();lose("💔 ¡"+f[1]+" no conviene!",f[3]+" Pierdes una vida.");return}
+  }else{b.classList.add("ok");G.c++;G.p+=10;var pw="";
+    if(f[2]==="v"){G.sh++;pw="🛡️ Poder: ¡escudo! Bloquea el próximo error."}
+    if(f[2]==="p"){G.left=Math.min(G.left+5,G.max+10);pw="⏱️ Poder: ¡+5 segundos!"}
+    if(f[2]==="f"){G.p+=20;pw="⭐ Poder: ¡+20 puntos extra!"}
+    say("✅ "+f[1]+": "+f[3]+" "+pw);
+    if(G.c>=M[G.m].g){win();return}}
+  hud()}
+function win(){clearInterval(tm);var m=M[G.m],s=Math.ceil(G.left),bonus=s*2,reto=(s>=10&&G.clean)?30:0;
+  G.p+=bonus+reto;G.bg.push(m.b);hud();
+  var txt="Tiempo sobrante: +"+bonus+" pts."+(reto?" ¡Reto cumplido: +30 pts!":" Reto no cumplido esta vez.");
+  var last=G.m>=M.length-1;
+  modal(m.b,"¡Ganaste la "+m.bn+"!",txt,last?"Ver resultados":"Siguiente misión",function(){if(last)end(true);else{G.m++;mission()}})}
+function lose(t,p){G.v--;hud();
+  if(G.v<=0){modal("💀",t,"Te quedaste sin vidas.","Ver resultados",function(){end(false)})}
+  else modal("😵",t,p+" Te quedan "+G.v+" vida(s).","Reintentar misión",mission)}
+function end(ok){clearInterval(tm);lbSave(player,G.p);lbShow();show(2);
+  $("eE").textContent=ok?"🏆":"🩺";
+  $("eT").textContent=ok?"¡Eres un GlucoHéroe!":"Buen intento, "+player;
+  $("eP").textContent=player+", lograste "+G.p+" puntos y "+G.bg.length+" de 5 insignias."+(ok?" Dominas qué comer con diabetes.":" Repasa los consejos y vuelve a intentarlo.");
+  $("eB").textContent=G.bg.join(" ")||"Sin insignias aún"}
+$("go").onclick=function(){player=($("nm").value.trim()||"Héroe");start()};
+$("again").onclick=function(){show(0)};
+lbShow();
+</script>
+</body>
+</html>
